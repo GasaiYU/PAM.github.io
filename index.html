@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <meta name="description"
+    content="As interest grows in world models that predict future states from current observations and actions, accurately modeling part-level dynamics has become increasingly relevant for various applications. Existing approaches, such as Puppet-Master, rely on fine-tuning large-scale pre-trained video diffusion models, which are impractical for real-world use due to the limitations of 2D video representation and slow processing times. To overcome these challenges, we present PartRM, a novel 4D reconstruction framework that simultaneously models appearance, geometry, and part-level motion from multi-view images of a static object. PartRM builds upon large 3D Gaussian reconstruction models, leveraging their extensive knowledge of appearance and geometry in static objects. To address data scarcity in 4D, we introduce the PartDrag-4D dataset, providing multi-view observations of part-level dynamics across over 20,000 states. We enhance the model’s understanding of interaction conditions with a multi-scale drag embedding module that captures dynamics at varying granularities. To prevent catastrophic forgetting during fine-tuning, we implement a two-stage training process that focuses sequentially on motion and appearance learning. Experimental results show that PartRM establishes a new state-of-the-art in part-level motion learning and can be applied in manipulation tasks in robotics." />
+
+  <meta name="keywords"
+    content="PartRM, 3D reconstruction, Drag" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="static/css/bulma.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" />
+  <link rel="stylesheet" href="static/css/index.css" />
+<style>
+  /* Lightbox样式 */
+  #lightbox img {
+      width: 80%;
+      max-width: 800px;
+      object-fit: contain;
+  }
+
+  /* 这是一个宽泛、安全的居中策略；如需更细粒度可调整选择器 */
+  .hero,
+  .hero .container,
+  .container,
+  .columns,
+  .column,
+  .publication-links,
+  .gallery,
+  h1,
+  h2,
+  h3,
+  table caption {
+    text-align: center;
+  }
+
+  /* Abstract 段落保持两端对齐 */
+  .content.has-text-justified,
+  .content.has-text-justified p {
+    text-align: justify !important;
+  }
+
+  /* 减少 Results 部分的间距 */
+  #quant-table,
+  #quant-table-oakink2 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  /* gallery 行与图片居中 */
+  .gallery .row {
+    text-align: center;
+  }
+
+  /* 使图片、视频块以块级元素并居中（避免 inline 造成的偏移） */
+  .gallery img,
+  .gallery .row img,
+  .video-container img,
+  .video-container video,
+  img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* 表格居中并让单元格文本居中 */
+  table {
+    margin-left: auto;
+    margin-right: auto;
+    border-collapse: collapse;
+  }
+  table th,
+  table td {
+    text-align: center;
+    padding: 6px 8px;
+  }
+
+  /* 1列视频网格样式 */
+  .video-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 12px;
+  }
+  .video-grid video {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+    background: #000;
+  }
+
+  /* 开头的 teaser 视频：2列布局 */
+  .video-grid-teaser {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 12px;
+  }
+  .video-grid-teaser video {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+    background: #000;
+  }
+
+  /* 响应式：窄屏时1列 */
+  @media (max-width: 768px) {
+    .video-grid-teaser {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Publication links: pill buttons with icons wrapping the text */
+  .publication-links .link-block {
+    display: inline-block;
+    margin: 0.25em 0.35em;
+  }
+  .publication-links .button {
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    padding: 0.65em 1.1em;
+  }
+  .publication-links .button .icon {
+    color: #fff;
+  }
+  .publication-links .button .icon + span,
+  .publication-links .button span + .icon {
+    margin-left: 0.55em;
+  }
+
+</style>
+
+<body>
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h2 class="title is-2 publication-title">
+              PAM: A Pose–Appearance–Motion Engine for Sim-to-Real HOI Video Generation
+            </h2>
+            <h3 class="subtitle is-4 publication-subtitle" style="color: red; line-height: 1.5;">
+              <!-- <strong style="color: red;">Accepted to CVPR 2025</strong> -->
+            </h3>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                Mingju Gao<sup>1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Kaisen Yang<sup>1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                <a href="http://c7w.tech/" target="_blank">Huan-ang Gao</a><sup>1</sup>,
+              </span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                <a href="https://arlo0o.github.io/libohan.github.io/" target="_blank">Bohan Li</a><sup>2,5</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Ao Ding<sup>1</sup>,</span><br/>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Wenyi Li<sup>1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Yangcheng Yu<sup>1</sup>,</span>
+                <span class="author-block">
+                  <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Jinkun Liu<sup>1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Shaocong Xu<sup>4</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Yike Niu<sup>1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Haohan Chi<sup>1</sup>,</span><br/>
+              <span class="author-block">
+                <!-- <a href="https://ha0tang.github.io/" target="_blank">Hao Tang</a><sup>4</sup>,</span> -->
+                <a href="https://ha0tang.github.io/", target="_blank">Hao Tang</a><sup>3</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="https://ha0tang.github.io/" target="_blank">Hao Tang</a><sup>4</sup>,</span> -->
+                <a, target="_blank">Yu Zhang</a><sup>2</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="https://ha0tang.github.io/" target="_blank">Hao Tang</a><sup>4</sup>,</span> -->
+                <a href="https://ericyi.github.io/", target="_blank">Li Yi</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <a href="https://sites.google.com/view/fromandto" target="_blank">Hao Zhao</a><sup>&dagger;1,4</sup>
+              </span>
+            </div>
+            <!-- a margin of 0.5em -->
+            <div style="margin: 0.5em;"></div>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block is-size-6">
+                <sup>1</sup> Tsinghua University &nbsp;&nbsp;&nbsp;
+                <sup>2</sup> Shanghai Jiao Tong University &nbsp;&nbsp;&nbsp;
+                <br>
+                <sup>3</sup> Peking University. &nbsp;&nbsp;&nbsp;
+                <sup>4</sup> Beijing Academy of Artificial Intelligence(BAAI) &nbsp;&nbsp;&nbsp;
+                <sup>5</sup> Eastern Institute of Technology
+                <!-- <div style="margin: 0.1em;"></div> -->
+                <span class="eql-cntrb"><small><br /><sup>*</sup>Indicates Equal Contribution</small></span>
+                <!-- a span of 5em-->
+                <span style="margin: 1em;"></span>
+                <span class="eql-cntrb"><small><sup>&dagger;</sup>Indicates Corresponding Author</small></span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- Arxiv PDF link -->
+                <span class="link-block">
+                  <a href="" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>Paper</span>
+
+                  </a>
+                </span>
+
+                <!-- Github link -->
+                <span class="link-block">
+                  <a href="" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+
+                  </a>
+                </span>
+
+                <!-- ArXiv abstract Link -->
+                <span class="link-block">
+                  <a href="" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+
+                <!-- Dataset and model Link -->
+                <span class="link-block">
+                  <a href="" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-cubes"></i>
+                    </span>
+                    <span>Dataset & Models</span>
+
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Top: Teaser video -->
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <div style="max-width: 1000px; margin: 0 auto;">
+          <video controls muted loop autoplay playsinline style="width: 100%; height: auto; display: block; border-radius: 6px; background: #000;">
+            <source src="PAM_new.mov" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End Top video -->
+
+  <!-- Paper abstract -->
+  <section class="hero is-small" style="margin-top: 20px;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Hand–object interaction (HOI) reconstruction and synthesis are becoming central to embodied AI and AR/VR. Yet, despite rapid progress, existing HOI generation research remains fragmented across three disjoint tracks: (1) pose-only synthesis that predicts MANO trajectories without producing pixels; (2) single-image HOI generation that hallucinates appearance from masks or 2D cues but lacks dynamics; and (3) video generation methods that require both the entire pose sequence and the ground-truth first frame as inputs, preventing true sim-to-real deployment. Inspired by the philosophy of previous work, we think that HOI generation requires a unified engine that brings together pose, appearance, and motion within one coherent framework. Thus we introduce PAM: a Pose–Appearance–Motion Engine for controllable HOI video generation. The performance of our engine is validated by: (1) On DexYCB, we obtain an FVD of 29.13 (vs. 38.83 for InterDyn), and MPJPE of 19.37 mm (vs. 30.05 mm for CosHand), while generating higher-resolution 480×720 videos compared to 256×256/256×384 baselines. (2) On OAKINK2, our full multi-condition model improves FVD from 68.76 → 46.31. (3) An ablation over input conditions on DexYCB shows that combining depth, segmentation, and keypoints consistently yields the best results. (4) For a downstream hand pose estimation task using SimpleHand, augmenting training with 3,400 synthetic videos (207k frames) allows a model trained on only 50% of the real data plus our synthetic data to match the 100% real baseline.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End paper abstract -->
+
+  <!-- Youtube video -->
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container">
+        <!-- Paper video. -->
+        <h2 class="title is-3 has-text-centered">Method</h2>
+        <div class="columns is-centered">
+          <img src="static/sim2real_res/new_main.png" width="70%" />
+        </div>
+        <div style="max-width: 70%; margin: 0 auto;">
+          <p class="has-text-centered is-size-6">
+            <b>Overview of our three-stage generation pipeline.</b> (1) <b>Pose Generation:</b> A pretrained pose generation model generates the intermediate hand-object interaction (HOI) poses based on the initial and target poses, along with the object mesh. (2) <b>Appearance Generation:</b> A controllable image diffusion model synthesizes the first frame of the video, conditioned on multi-modal inputs (depth maps, semantic masks, and keypoint annotations). (3) <b>Motion Generation:</b> The generated HOI sequence and the first frame are rendered into a full video sequence by a video diffusion model, conditioned on the same multi-modal inputs used in the appearance generation stage.
+          </p>
+        </div>
+        <br/>
+        <!-- <div class="columns is-centered">
+          <img src="static/images/ade-teaser.jpg" width="55%" />
+        </div>
+        <h2 class="has-text-centered is-size-6" width="55%">
+          <b>Explanation of the underlying mechanisms of our proposed noise priors using ADE20K.</b> Introducing the
+          spatial prior aligns the image style with the dataset's aesthetic while removing odd substructures in large
+          semantic areas. Incorporating the class prior can enhance alignment with the provided semantic masks. By
+          jointing spatial and class priors, their beneficial features are combined, allowing our joint prior (SCP-Diff)
+          to achieve state-of-the-art results on ADE20K. 
+        </h2> -->
+
+      </div>
+    </div>
+  </section>
+  <!-- End youtube video -->
+
+  <!-- Youtube video -->
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container">
+        <!-- Paper video. -->
+  <h2 class="title is-3 has-text-centered" style="margin-bottom: 1rem;">Results</h2>
+
+  <section class="section" id="quant-table">
+    <div class="container is-max-desktop content">
+      <h3 class="title">Quantitative comparison (DexYCB)</h3>
+      <div style="overflow-x:auto;">
+        <table style="margin: 0 auto; border-collapse: collapse; width: 90%; max-width: 1100px;">
+          <thead>
+            <tr>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:#eee;">Method</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:cyan;">FVD (↓)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:cyan;">MF (↑)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:lightgreen;">LPIPS (↓)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:lightgreen;">SSIM (↑)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:lightgreen;">PSNR (↑)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:yellow;">MPJPE (↓)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:pink;">Resolution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">CosHand</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">58.51</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.591</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.139</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.767</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">23.20</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">30.05</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">256 x 256</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">InterDyn</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">38.83</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.680</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.119</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.848</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">24.86</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">-</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">256 x 384</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">ManiVideo</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">-</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">-</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.079</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>0.913</u></td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>30.10</u></td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">57.30</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">-</td>
+            </tr>
+            <tr style="border-top:2px solid #bbb;">
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">Ours w/ all</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">29.13</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>0.712</u></td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">0.069</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">0.914</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">30.17</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">19.37</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">480 x 720</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="max-width:90%; margin:0.75em auto;"> <strong> Quantitative comparison on DexYCB dataset.</strong> Our method is evaluated against CosHand, InterDyn, and ManiVideo. Results for InterDyn and ManiVideo are taken from their original papers. For fair comparison, CosHand was fine-tuned on the s0-split training set identical to ours. Our approach achieves state-of-the-art performance across all metrics (FVD, LPIPS, MF, MPJPE) while generating high-resolution 480×720 videos.</p>
+    </div>
+  </section>
+
+  <!-- Quantitative table for OAKINK2 converted from LaTeX -->
+  <section class="section" id="quant-table-oakink2">
+    <div class="container is-max-desktop content">
+      <h3 class="title">Quantitative comparison (OAKINK2)</h3>
+      <div style="overflow-x:auto;">
+        <table style="margin: 0 auto; border-collapse: collapse; width: 75%; max-width: 1000px;">
+          <thead>
+            <tr>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:#eee;">Method</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:cyan;">FVD (↓)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:cyan;">MF (↑)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:lightgreen;">LPIPS (↓)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:lightgreen;">SSIM (↑)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:lightgreen;">PSNR (↑)</th>
+              <th style="padding:8px 12px; border:1px solid #ddd; background:yellow;">MPJPE (↓)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">CosHand</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">68.76</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.651</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.156</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.765</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">23.84</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">14.49</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">Ours w/ seg</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>48.97</u></td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>0.708</u></td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>0.084</u></td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.831</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">25.76</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">9.61</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">Ours w/ depth</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">50.85</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.702</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.086</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>0.845</u></td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>26.98</u></td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">10.07</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">Ours w/ hand</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">52.41</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.671</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.113</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">0.838</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;">25.66</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center;"><u>8.01</u></td>
+            </tr>
+            <tr style="border-top:2px solid #bbb;">
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">Ours w/ all</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">46.31</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">0.777</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">0.081</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">0.851</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">28.36</td>
+              <td style="padding:8px 12px; border:1px solid #ddd; text-align:center; font-weight:bold;">7.01</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="max-width:90%; margin:0.75em auto;"> <strong>Quantitative results on the OAKINK2 dataset.</strong> Comparison of our method with CosHand. For a fair evaluation, both models are trained on the same dataset. Our approach achieves state-of-the-art performance, outperforming CosHand across all evaluated metrics.</p>
+    </div>
+  </section>
+
+  <h3 class="title is-4 has-text-centered">Downstream Validation</h3>
+  <div class="columns is-centered">
+    <img src="static/sim2real_res/downstream.png" width="70%" />
+  </div>
+  <div style="max-width: 70%; margin: 0 auto;">
+    <p class="has-text-centered is-size-6">
+      <strong> Data augmentation analysis with varying ratios of real data.</strong> We augment different portions of the DexYCB training set (25%, 50%, 75%, 100%) with our generated synthetic data. The baseline (dashed line) indicates performance when training solely on 100% of the real DexYCB data without synthetic augmentation.
+    </p>
+  </div>
+  <br />
+        
+
+        <!-- <div class="gallery">
+          <div class="row">
+               <img src="static/sim2real_res/head.png" alt="Image 1" onclick="openLightbox(this)" width="50%" height="auto">
+          </div>
+          <h2 class="has-text-centered is-size-6">
+         (a) <b>Overview</b> of proposed Sim2Real-HOI. Given the initial and desired final poses of both the hand and object, along with the object mesh, Sim2Real-HOI generates photo-realistic in-the-wild videos by decoupling motion and appearance through a diffusion-based generative process, thereby closing the sim-to-real gap without paired real-world supervision. (b) <b>Evaluation on video quality and downstream task.</b> Our experiments reveal that Sim2Real-HOI not only generates videos with superior perceptual quality, as evidenced by a lower Fréchet Video Distance (FVD) against baselines, but also that these videos serve as effective synthetic data. Incorporating them into training reduces the error of a downstream hand pose estimator, outperforming the model trained solely on real videos.
+        </h2>
+           <div class="row"> -->
+              <!-- <img src="static/partrm_res/images/supp_pm1.jpg" alt="Image 4" onclick="openLightbox(this)" width="50%" height="auto"> -->
+          <!-- </div>
+        </div>  -->
+
+        <!-- Generated videos 4x4 grid -->
+        <h3 class="title is-4 has-text-centered" style="margin-top: 1.5em;">Generated Videos</h3>
+        <div class="video-grid">
+          <!-- d1.mp4 through d16.mp4 -->
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0002.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0003.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0007.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0012.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0015.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0017.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0025.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0027.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0035.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0046.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0048.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0049.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0052.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0065.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0067.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0070.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <!-- More videos -->
+        <div class="video-grid" style="margin-top:12px;">
+          <!-- oad/5..8 -->
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/oaink2_group/1.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/oaink2_group/2.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/oaink2_group/3.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/oaink2_group/4.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-grid" style="margin-top:12px;">
+          <!-- oad/9..10 + d17..d18 -->
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0072.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0073.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0093.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/group/group_0105.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-grid" style="margin-top:12px;">
+          <!-- d19..d22 -->
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/oaink2_group/5.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/oaink2_group/6.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/oaink2_group/7.mp4" type="video/mp4">
+          </video>
+          <video controls muted loop autoplay playsinline>
+            <source src="static/sim2real_res/oaink2_group/8.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <!-- results teaser + quantitative comparison removed as requested -->
+
+      </div>
+    </div>
+  </section>
+  <!-- End youtube video -->
+
+  <!-- <div class="carousel-container">
+    <div class="progress-left"></div>
+    <button class="prev" onclick="changeImage(-1)">&#10094;</button>
+    <img id="carousel-image" src="image1.jpg" alt="Image">
+    <button class="next" onclick="changeImage(1)">&#10095;</button>
+    <div class="progress-right"></div>
+  </div>
+
+  <script src="static/js/image_scipt.js"></script> -->
+
+  <!-- <section class="hero is-small">
+    <div class="hero-body">
+        <div class="container">
+
+            <h2 class="title is-3">Gallery</h2>
+
+            <div id="lightbox">
+                <span onclick="closeLightbox()">×</span>
+                <div class="buttons">
+                    <button onclick="prevImage()">❮</button>
+                    <button onclick="nextImage()">❯</button>
+                </div>
+                <img id="lightbox-img" src="" alt="">
+            </div>
+
+        </div>
+    </div>
+</section> -->
+
+  <!-- BibTeX section was moved to just before the footer per user request -->
+
+  <!-- Quantitative table converted from LaTeX (inserted by assistant) -->
+
+
+  <!-- <div class="columns is-centered">
+    <img src="static/images/ade-teaser.jpg" width="55%" />
+  </div>
+  <h2 class="has-text-centered is-size-6" width="55%">
+    <b>Explanation of the underlying mechanisms of our proposed noise priors using ADE20K.</b> Introducing the
+    spatial prior aligns the image style with the dataset's aesthetic while removing odd substructures in large
+    semantic areas. Incorporating the class prior can enhance alignment with the provided semantic masks. By
+    jointing spatial and class priors, their beneficial features are combined, allowing our joint prior (SCP-Diff)
+    to achieve state-of-the-art results on ADE20K. 
+  </h2> -->
+
+
+  <!--BibTex citation (moved here) -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      If you find our work useful in your research, please consider citing:
+      <div style="margin: 0.5em;"></div>
+      <pre><code>@article{gao2025PAM,
+  title={PAM: A Pose–Appearance–Motion Engine for Sim-to-Real HOI Video Generation},
+  author={},
+  journal={},
+  year={2025}
+}</code></pre>
+    </div>
+  </section>
+  <!--End BibTex citation -->
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This page was built using the
+              <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project
+                Page Template</a>
+              which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              You are free to borrow the of this website, we
+              just ask that you link back to this page in the footer. <br />
+              This website is licensed under a
+              <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons
+                Attribution-ShareAlike 4.0 International
+                License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Statcounter tracking code -->
+
+  <!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+  <!-- End of Statcounter Code -->
+  <script src="https://unpkg.com/beerslider/dist/BeerSlider.js"></script>
+  <script>
+    new BeerSlider(document.getElementById('slider1'), { start: '40' });
+    new BeerSlider(document.getElementById('slider2'), { start: '40' });
+    new BeerSlider(document.getElementById('slider3'), { start: '40' });
+    new BeerSlider(document.getElementById('slider4'), { start: '40' });
+    new BeerSlider(document.getElementById('slider5'), { start: '40' });
+    new BeerSlider(document.getElementById('slider6'), { start: '40' });
+    new BeerSlider(document.getElementById('slider7'), { start: '40' });
+    new BeerSlider(document.getElementById('slider8'), { start: '40' });
+    new BeerSlider(document.getElementById('slider9'), { start: '40' });
+    new BeerSlider(document.getElementById('slider10'), { start: '40' });
+  </script>
+
+  <script>
+    let currentIndex = -1;
+    const images = [
+        'static/partrm_res/images/supp_part.jpg',
+        'static/partrm_res/images/supp_pm.jpg',
+    ];
+
+    function openLightbox(img) {
+        document.getElementById('lightbox').style.display = 'flex';
+        
+        let clickedImageSrc = img.getAttribute('src');
+        currentIndex = images.indexOf(clickedImageSrc);
+        document.getElementById('lightbox-img').src = clickedImageSrc;
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+    }
+
+    function prevImage() {
+        if (currentIndex > 0) {
+            currentIndex--;
+        } else {
+            currentIndex = images.length - 1;
+        }
+        document.getElementById('lightbox-img').src = images[currentIndex];
+    }
+
+    function nextImage() {
+        if (currentIndex < images.length - 1) {
+            currentIndex++;
+        } else {
+            currentIndex = 0;
+        }
+        document.getElementById('lightbox-img').src = images[currentIndex];
+    }
+  </script>
+  
+</body>
+
+</html>
